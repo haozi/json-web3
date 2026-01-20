@@ -1,10 +1,11 @@
 {
   "name": "json-web3",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "BigInt-safe JSON serialization and deserialization for Web3 use cases.",
   "keywords": [
     "json",
     "bigint",
+    "arraybuffer",
     "serialization",
     "deserialization",
     "web3"
@@ -35,14 +36,21 @@
   ],
   "scripts": {
     "build": "tsup",
+    "coverage": "vitest run --coverage",
     "lint": "prettier . --write",
     "prepublishOnly": "pnpm run build",
     "test": "vitest run",
+    "test:coverage": "pnpm run coverage",
     "test:watch": "vitest"
   },
   "devDependencies": {
     "@types/node": "^25.0.9",
+    "@vitest/coverage-v8": "^4.0.17",
     "prettier": "^3.8.0",
+    "prettier-plugin-lint-md": "^1.0.1",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "prettier-plugin-sort-json": "^4.2.0",
+    "prettier-plugin-tailwindcss": "^0.7.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^4.0.17"
