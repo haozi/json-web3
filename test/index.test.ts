@@ -83,6 +83,10 @@ describe('json-web3', () => {
     expect(getTypedArrayName(fake)).toBe('Uint8Array')
   })
 
+  it('getTypedArrayName returns null for undefined', () => {
+    expect(getTypedArrayName(undefined)).toBeNull()
+  })
+
   it('supports JSON.parse reviver after decoding', () => {
     const text = stringify({ balance: 7n })
     const output = parse(text, (_, value) => (typeof value === 'bigint' ? value.toString() : value))
@@ -154,21 +158,49 @@ describe('json-web3', () => {
     expect(output).toEqual([1, null, 3])
   })
 
-  it('preserves NaN and Infinity as JSON.stringify does (null)', () => {
+  it('round-trips NaN and Infinity', () => {
     const input = { nan: Number.NaN, inf: Number.POSITIVE_INFINITY, ninf: Number.NEGATIVE_INFINITY }
     const text = stringify(input)
-    expect(text).toBe('{"nan":null,"inf":null,"ninf":null}')
     const output = parse(text)
-    expect(output).toEqual({ nan: null, inf: null, ninf: null })
+    expect(Number.isNaN(output.nan)).toBe(true)
+    expect(output.inf).toBe(Number.POSITIVE_INFINITY)
+    expect(output.ninf).toBe(Number.NEGATIVE_INFINITY)
   })
 
-  it('serializes Date like JSON.stringify (ISO string)', () => {
+  it('serializes Date using timestamp and restores Date on parse', () => {
     const d = new Date('2020-01-02T03:04:05.006Z')
     const text = stringify({ d })
     const output = parse(text)
 
-    expect(typeof output.d).toBe('string')
-    expect(output.d).toBe(d.toJSON())
+    expect(output.d).toBeInstanceOf(Date)
+    expect(output.d.getTime()).toBe(d.getTime())
+  })
+
+  it('round-trips Map, Set, RegExp, URL, and Function', () => {
+    function echo(arg: string) {
+      return arg
+    }
+    const input = {
+      map: new Map([['hello', 'world']]),
+      set: new Set([123, 456]),
+      re: /([^\s]+)/g,
+      url: new URL('https://example.com/'),
+      fn: echo,
+    }
+    const text = stringify(input)
+    const output = parse(text)
+
+    expect(output.map).toBeInstanceOf(Map)
+    expect(Array.from(output.map.entries())).toEqual([['hello', 'world']])
+    expect(output.set).toBeInstanceOf(Set)
+    expect(Array.from(output.set.values())).toEqual([123, 456])
+    expect(output.re).toBeInstanceOf(RegExp)
+    expect(output.re.source).toBe('([^\\s]+)')
+    expect(output.re.flags).toBe('g')
+    expect(output.url).toBeInstanceOf(URL)
+    expect(output.url.toString()).toBe('https://example.com/')
+    expect(typeof output.fn).toBe('function')
+    expect(output.fn('ok')).toBe('ok')
   })
 
   it('supports space argument formatting', () => {
@@ -194,6 +226,35 @@ describe('json-web3', () => {
     expect(Array.from(output.data)).toEqual([1])
   })
 
+  it('replacer array does not drop new internal tag keys', () => {
+    const input = {
+      d: new Date('2020-01-02T03:04:05.006Z'),
+      inf: Number.POSITIVE_INFINITY,
+      map: new Map([['hello', 'world']]),
+      set: new Set([123, 456]),
+      re: /([^\s]+)/g,
+      url: new URL('https://example.com/'),
+      fn: (arg: string) => arg,
+    }
+    const text = stringify(input, ['d', 'inf', 'map', 'set', 're', 'url', 'fn'])
+    const output = parse(text)
+
+    expect(output.d).toBeInstanceOf(Date)
+    expect(output.d.getTime()).toBe(input.d.getTime())
+    expect(output.inf).toBe(Number.POSITIVE_INFINITY)
+    expect(output.map).toBeInstanceOf(Map)
+    expect(Array.from(output.map.entries())).toEqual([['hello', 'world']])
+    expect(output.set).toBeInstanceOf(Set)
+    expect(Array.from(output.set.values())).toEqual([123, 456])
+    expect(output.re).toBeInstanceOf(RegExp)
+    expect(output.re.source).toBe('([^\\s]+)')
+    expect(output.re.flags).toBe('g')
+    expect(output.url).toBeInstanceOf(URL)
+    expect(output.url.toString()).toBe('https://example.com/')
+    expect(typeof output.fn).toBe('function')
+    expect(output.fn('ok')).toBe('ok')
+  })
+
   it('replacer function: returning undefined drops property like JSON.stringify', () => {
     const input = { a: 1n, b: 2 }
     const text = stringify(input, (key, value) => (key === 'b' ? undefined : value))
@@ -216,6 +277,28 @@ describe('json-web3', () => {
     // normalized length is odd -> fromHex throws
     const bad = '{"data":{"__@json.typedarray__":{"type":"Uint8Array","bytes":"0xabc"}}}'
     expect(() => parse(bad)).toThrowError(/Invalid hex string for bytes/)
+  })
+
+  it('parse throws on invalid payloads for new types', () => {
+    const cases = [
+      '{"x":{"__@json.number__":"bad"}}',
+      '{"x":{"__@json.map__":123}}',
+      '{"x":{"__@json.set__":123}}',
+      '{"x":{"__@json.regexp__":{"source":1,"flags":[]}}}',
+      '{"x":{"__@json.url__":123}}',
+      '{"x":{"__@json.function__":123}}',
+    ]
+
+    for (const text of cases) {
+      expect(() => parse(text)).toThrowError()
+    }
+  })
+
+  it('falls back to raw bytes when typed array type is unknown', () => {
+    const text = '{"__@json.typedarray__":{"type":"UnknownArray","bytes":"0x01"}}'
+    const output = parse(text)
+    expect(output).toBeInstanceOf(Uint8Array)
+    expect(Array.from(output)).toEqual([1])
   })
 
   it('parses typed array bytes without 0x prefix', () => {
@@ -328,13 +411,15 @@ describe('json-web3', () => {
     expect(output.bytes[256]).toBe(0)
   })
 
-  it('symbol and function behavior matches JSON.stringify (dropped)', () => {
+  it('symbol is dropped while function is preserved', () => {
     const sym = Symbol('x')
-    const input: any = { a: 1, s: sym, f: () => 1 }
+    const input: any = { a: 1, s: sym, f: (arg: string) => arg }
     const text = stringify(input)
-    expect(text).toBe('{"a":1}')
     const output = parse(text)
-    expect(output).toEqual({ a: 1 })
+    expect(output.a).toBe(1)
+    expect(output.s).toBeUndefined()
+    expect(typeof output.f).toBe('function')
+    expect(output.f('ok')).toBe('ok')
   })
 
   it('BigInt in array with replacer array filtering works as expected', () => {

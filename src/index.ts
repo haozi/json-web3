@@ -1,12 +1,22 @@
 import {
   BIGINT_TAG,
+  DATE_TAG,
   fromSerializable,
+  FUNCTION_TAG,
   isArray,
+  isDate,
   isFunction,
+  isRegExpPayload,
   isTypedArrayPayload,
+  isURL,
+  MAP_TAG,
+  NUMBER_TAG,
+  REGEXP_TAG,
+  SET_TAG,
   toSerializable,
   TYPEDARRAY_TAG,
   undefined,
+  URL_TAG,
 } from './utils'
 
 const RAW_JSON = JSON
@@ -20,8 +30,16 @@ const applyReplacer = (holder: any, key: string, value: any, replacer: Replacer)
   if (isArray(replacer)) {
     if (key === '') return value
     if (key === BIGINT_TAG) return value
+    if (key === DATE_TAG) return value
+    if (key === NUMBER_TAG) return value
+    if (key === MAP_TAG) return value
+    if (key === SET_TAG) return value
+    if (key === REGEXP_TAG) return value
+    if (key === URL_TAG) return value
+    if (key === FUNCTION_TAG) return value
     if (key === TYPEDARRAY_TAG) return value
     if (isTypedArrayPayload(holder)) return value
+    if (isRegExpPayload(holder)) return value
     if (isArray(holder)) return value
     return replacer.includes(key) ? value : undefined
   }
@@ -32,13 +50,15 @@ export const stringify = (value: any, replacer: Replacer = null, space?: string 
   RAW_JSON.stringify(
     value,
     function replacerFn(key, v) {
-      const replaced = applyReplacer(this, key, v, replacer)
+      const holderValue = this && key in Object(this) ? (this as any)[key] : v
+      const candidate = isDate(holderValue) || isURL(holderValue) ? holderValue : v
+      const replaced = applyReplacer(this, key, candidate, replacer)
       return toSerializable(replaced)
     },
     space,
   )
 
-export const parse = (text: string, reviver: Reviver = null): any =>
+export const parse = <T = any>(text: string, reviver: Reviver = null): T =>
   RAW_JSON.parse(text, (key, v) => {
     const decoded = fromSerializable(v)
     return isFunction(reviver) ? reviver(key, decoded) : decoded
