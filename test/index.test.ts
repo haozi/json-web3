@@ -464,6 +464,11 @@ describe('json-web3', () => {
       { name: 'Int8Array', ctor: Int8Array, values: [-128, -1, 0, 127] },
       { name: 'Int16Array', ctor: Int16Array, values: [-32768, -1, 0, 32767] },
       { name: 'Int32Array', ctor: Int32Array, values: [-2147483648, -1, 0, 2147483647] },
+      {
+        name: 'Float16Array',
+        ctor: typeof Float16Array !== 'undefined' ? Float16Array : undefined,
+        values: [1.5, -2.25, 3.125],
+      },
       { name: 'Float32Array', ctor: Float32Array, values: [1.5, -2.25, 3] },
       { name: 'Float64Array', ctor: Float64Array, values: [1.5, -2.25, 3] },
       {
@@ -486,7 +491,8 @@ describe('json-web3', () => {
 
       expect(text).toContain('__@json.typedarray__')
       expect(output.data).toBeInstanceOf(ctor)
-      expect(Array.from(output.data)).toEqual(values)
+      const expected = name === 'Float16Array' ? Array.from(new ctor(values as any)) : values
+      expect(Array.from(output.data)).toEqual(expected)
     }
   })
 

@@ -52,15 +52,20 @@ export const getTypedArrayName = (value: any): string | null => {
 }
 
 const TYPEDARRAY_CTORS: Record<string, any> = {
+  Int8Array: !isUndefined(Int8Array) ? Int8Array : undefined,
   Uint8Array: !isUndefined(Uint8Array) ? Uint8Array : undefined,
   Uint8ClampedArray: !isUndefined(Uint8ClampedArray) ? Uint8ClampedArray : undefined,
-  Uint16Array: !isUndefined(Uint16Array) ? Uint16Array : undefined,
-  Uint32Array: !isUndefined(Uint32Array) ? Uint32Array : undefined,
-  Int8Array: !isUndefined(Int8Array) ? Int8Array : undefined,
+
   Int16Array: !isUndefined(Int16Array) ? Int16Array : undefined,
+  Uint16Array: !isUndefined(Uint16Array) ? Uint16Array : undefined,
+  Float16Array: !isUndefined(Float16Array) ? Float16Array : undefined,
+
   Int32Array: !isUndefined(Int32Array) ? Int32Array : undefined,
+  Uint32Array: !isUndefined(Uint32Array) ? Uint32Array : undefined,
   Float32Array: !isUndefined(Float32Array) ? Float32Array : undefined,
+
   Float64Array: !isUndefined(Float64Array) ? Float64Array : undefined,
+
   BigInt64Array: !isUndefined(BigInt64Array) ? BigInt64Array : undefined,
   BigUint64Array: !isUndefined(BigUint64Array) ? BigUint64Array : undefined,
 }

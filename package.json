@@ -1,6 +1,6 @@
 {
   "name": "json-web3",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "BigInt-safe JSON serialization and deserialization for Web3 use cases.",
   "keywords": [
     "json",
