@@ -10,7 +10,7 @@ export const FUNCTION_TAG = '__@json.function__'
 export const NUMBER_TAG = '__@json.number__'
 
 const UDF = 'undefined'
-export const undefined = void UDF
+export const udf = void UDF
 
 export const isString = (value: any): value is string => typeof value === 'string'
 export const hasOwnProperty = (obj: any, prop: string): boolean =>
@@ -25,8 +25,9 @@ export const isMap = (value: any): value is Map<any, any> => value instanceof Ma
 export const isSet = (value: any): value is Set<any> => value instanceof Set
 export const isRegExp = (value: any): value is RegExp => value instanceof RegExp
 export const isURL = (value: any): value is URL => typeof URL !== UDF && value instanceof URL
+const isNumber = (value: any): value is number => typeof value === 'number'
 export const isNonFiniteNumber = (value: any): value is number =>
-  typeof value === 'number' && !Number.isFinite(value)
+  isNumber(value) && !Number.isFinite(value)
 export const isInteger = (value: any): value is number => Number.isInteger(value)
 const hasBuffer = (): boolean => typeof Buffer !== UDF && isFunction(Buffer.isBuffer)
 
@@ -54,22 +55,22 @@ export const getTypedArrayName = (value: any): string | null => {
 }
 
 const TYPEDARRAY_CTORS: Record<string, any> = {
-  Int8Array: typeof Int8Array !== UDF ? Int8Array : undefined,
-  Uint8Array: typeof Uint8Array !== UDF ? Uint8Array : undefined,
-  Uint8ClampedArray: typeof Uint8ClampedArray !== UDF ? Uint8ClampedArray : undefined,
+  Int8Array: typeof Int8Array !== UDF ? Int8Array : udf,
+  Uint8Array: typeof Uint8Array !== UDF ? Uint8Array : udf,
+  Uint8ClampedArray: typeof Uint8ClampedArray !== UDF ? Uint8ClampedArray : udf,
 
-  Int16Array: typeof Int16Array !== UDF ? Int16Array : undefined,
-  Uint16Array: typeof Uint16Array !== UDF ? Uint16Array : undefined,
-  Float16Array: typeof Float16Array !== UDF ? Float16Array : undefined,
+  Int16Array: typeof Int16Array !== UDF ? Int16Array : udf,
+  Uint16Array: typeof Uint16Array !== UDF ? Uint16Array : udf,
+  Float16Array: typeof Float16Array !== UDF ? Float16Array : udf,
 
-  Int32Array: typeof Int32Array !== UDF ? Int32Array : undefined,
-  Uint32Array: typeof Uint32Array !== UDF ? Uint32Array : undefined,
-  Float32Array: typeof Float32Array !== UDF ? Float32Array : undefined,
+  Int32Array: typeof Int32Array !== UDF ? Int32Array : udf,
+  Uint32Array: typeof Uint32Array !== UDF ? Uint32Array : udf,
+  Float32Array: typeof Float32Array !== UDF ? Float32Array : udf,
 
-  Float64Array: typeof Float64Array !== UDF ? Float64Array : undefined,
+  Float64Array: typeof Float64Array !== UDF ? Float64Array : udf,
 
-  BigInt64Array: typeof BigInt64Array !== UDF ? BigInt64Array : undefined,
-  BigUint64Array: typeof BigUint64Array !== UDF ? BigUint64Array : undefined,
+  BigInt64Array: typeof BigInt64Array !== UDF ? BigInt64Array : udf,
+  BigUint64Array: typeof BigUint64Array !== UDF ? BigUint64Array : udf,
 }
 
 export const toHex = (value: Uint8Array): string => {
@@ -104,6 +105,9 @@ export const toSerializable = (value: any, options: { allowFunction?: boolean } 
 
   if (isNonFiniteNumber(value)) {
     return { [NUMBER_TAG]: String(value) }
+  }
+  if (isNumber(value) && !Number.isSafeInteger(value)) {
+    throw new Error('Number exceeds safe integer range')
   }
 
   if (isDate(value)) {

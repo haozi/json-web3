@@ -17,7 +17,7 @@ import {
   SET_TAG,
   toSerializable,
   TYPEDARRAY_TAG,
-  undefined,
+  udf,
   URL_TAG,
 } from './utils'
 
@@ -45,7 +45,7 @@ const applyReplacer = (holder: any, key: string, value: any, replacer: Replacer)
     if (isArrayBufferPayload(holder)) return value
     if (isRegExpPayload(holder)) return value
     if (isArray(holder)) return value
-    return replacer.includes(key) ? value : undefined
+    return replacer.includes(key) ? value : udf
   }
   return value
 }

@@ -167,6 +167,13 @@ describe('json-web3', () => {
     expect(output.ninf).toBe(Number.NEGATIVE_INFINITY)
   })
 
+  it('throws when number exceeds safe integer range', () => {
+    expect(() => stringify({ v: Number.MAX_SAFE_INTEGER + 1 })).toThrowError(/safe integer range/i)
+    expect(() => stringify_UNSAFE({ v: Number.MIN_SAFE_INTEGER - 1 })).toThrowError(
+      /safe integer range/i,
+    )
+  })
+
   it('serializes Date using timestamp and restores Date on parse', () => {
     const d = new Date('2020-01-02T03:04:05.006Z')
     const text = stringify({ d })
