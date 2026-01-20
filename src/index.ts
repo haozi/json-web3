@@ -88,7 +88,7 @@ export const parse_UNSAFE = <T = any>(text: string, reviver: Reviver = null): T 
 
 export default {
   stringify,
-  stringify_UNSAFE,
   parse,
+  stringify_UNSAFE,
   parse_UNSAFE,
 }

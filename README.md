@@ -61,8 +61,8 @@ const restoredUnsafe = jsonWeb3.parse_UNSAFE(textUnsafe)
 ## API (Fully compatible with native globalThis.JSON)
 
 - `stringify(value, replacer?, space?)`
-- `stringify_UNSAFE(value, replacer?, space?)` (serializes `Function` payloads)
 - `parse(text, reviver?)`
+- `stringify_UNSAFE(value, replacer?, space?)` (serializes `Function` payloads)
 - `parse_UNSAFE(text, reviver?)` (revives `Function` payloads via `new Function(...)`)
 
 ## Note
