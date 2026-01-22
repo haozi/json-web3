@@ -36,6 +36,7 @@
   ],
   "scripts": {
     "build": "tsup",
+    "coverage": "vitest run --coverage",
     "postinstall": "pnpm run ncu",
     "lint": "prettier . --write",
     "ncu": "pnpm npm-check-updates -u --deep",
