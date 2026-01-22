@@ -1,5 +1,12 @@
 # json-web3
 
+[![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/haozi/json-web3/deploy.yml)](https://github.com/haozi/json-web3/actions)
+[![npm](https://img.shields.io/npm/v/json-web3.svg)](https://www.npmjs.com/package/json-web3)
+[![codecov](https://codecov.io/gh/haozi/json-web3/branch/main/graph/badge.svg)](https://app.codecov.io/gh/haozi/json-web3)
+[![contributors](https://img.shields.io/github/contributors/haozi/json-web3)](https://github.com/haozi/json-web3/graphs/contributors)
+[![LICENSE](https://img.shields.io/npm/l/json-web3)](https://github.com/haozi/json-web3/blob/main/LICENSE)
+[![Size](https://img.shields.io/bundlejs/size/json-web3.svg)](https://cdn.jsdelivr.net/npm/json-web3/+esm)
+
 BigInt-safe JSON serialization and deserialization for Web3 data.
 
 ## Install
