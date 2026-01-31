@@ -128,3 +128,9 @@ window.JSON = jsonWeb3 // Yes, you can replace it directly; it is fully compatib
 - Node `Buffer` JSON shapes and typed arrays are encoded as `{"__@json.typedarray__":{"type":"<Name>","bytes":"0x..."}}` and decoded back to the original typed array (`Uint8Array`, `Uint8ClampedArray`, `Uint16Array`, `Uint32Array`, `Int8Array`, `Int16Array`, `Int32Array`, `Float32Array`, `Float64Array`, `BigInt64Array`, `BigUint64Array`).
 
 Compared to libraries that require eval-based parsing (for example, `serialize-javascript`), this approach is generally safer and more efficient.
+
+## RFC (Serialization Format)
+
+To enable cross-language interoperability, the serialization format is specified
+in [RFC.md](RFC.md). It defines the canonical tag objects, payload shapes, validation
+rules, and UNSAFE function handling.

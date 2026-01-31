@@ -54,6 +54,19 @@ describe('json-web3', () => {
     expect(Array.from(output.data)).toEqual([1, 2, 3, 255])
   })
 
+  it('serializes typed array view using byteOffset/byteLength', () => {
+    const buffer = new ArrayBuffer(6)
+    new Uint8Array(buffer).set([1, 2, 3, 4, 5, 6])
+    const view = new Uint8Array(buffer, 2, 3) // [3,4,5]
+
+    const text = stringify({ data: view })
+    const output = parse(text)
+
+    expect(text).toContain('0x030405')
+    expect(output.data).toBeInstanceOf(Uint8Array)
+    expect(Array.from(output.data)).toEqual([3, 4, 5])
+  })
+
   it('serializes cross-realm Uint8Array bytes', () => {
     const context = createContext({})
     const script = new Script('u = new Uint8Array([1, 2, 3, 255])')
@@ -128,6 +141,18 @@ describe('json-web3', () => {
 
     expect(output.ab).toBeInstanceOf(ArrayBuffer)
     expect(Array.from(new Uint8Array(output.ab))).toEqual([9, 8, 7, 6])
+  })
+
+  it('serializes ArrayBuffer bytes exactly', () => {
+    const ab = new ArrayBuffer(3)
+    new Uint8Array(ab).set([10, 11, 12])
+
+    const text = stringify({ ab })
+    const output = parse(text)
+
+    expect(text).toContain('0x0a0b0c')
+    expect(output.ab).toBeInstanceOf(ArrayBuffer)
+    expect(Array.from(new Uint8Array(output.ab))).toEqual([10, 11, 12])
   })
 
   it('does not mutate JSON primitives and null', () => {
@@ -208,6 +233,24 @@ describe('json-web3', () => {
     expect(output.url.toString()).toBe('https://example.com/')
     expect(typeof output.fn).toBe('function')
     expect(output.fn('ok')).toBe('ok')
+  })
+
+  it('preserves Map/Set insertion order', () => {
+    const input = {
+      map: new Map([
+        ['b', 2],
+        ['a', 1],
+      ]),
+      set: new Set([3, 1, 2]),
+    }
+    const text = stringify(input)
+    const output = parse(text)
+
+    expect(Array.from(output.map.entries())).toEqual([
+      ['b', 2],
+      ['a', 1],
+    ])
+    expect(Array.from(output.set.values())).toEqual([3, 1, 2])
   })
 
   it('supports space argument formatting', () => {
