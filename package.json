@@ -10,10 +10,10 @@
     "deserialization",
     "web3"
   ],
-  "homepage": "https://github.com/haozi/json-web3#readme",
+  "homepage": "https://github.com/JSON-Web3/json-web3#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/haozi/json-web3.git"
+    "url": "git+https://github.com/JSON-Web3/json-web3.git"
   },
   "license": "MIT",
   "author": "haozi",
